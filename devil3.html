@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>惡魔的詛咒 v1.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121013;
+            --surface-color: #1a1a1d;
+            --primary-color: #c9a44e; /* Gold */
+            --secondary-color: #a45ee5; /* Purple */
+            --text-color: #e0e0e0;
+            --text-muted-color: #888;
+            --danger-color: #c74242; /* Crimson Red */
+            --success-color: #82c97c;
+            --font-body: 'Noto Sans TC', sans-serif;
+            --font-display: 'Cinzel', serif;
+        }
+
+        @keyframes pulse-gold {
+            0% { text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color); }
+            50% { text-shadow: 0 0 20px var(--primary-color), 0 0 30px var(--primary-color); }
+            100% { text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color); }
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-color);
+            margin: 0;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            margin: 0;
+            font-size: 3rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .timer-display {
+            font-family: var(--font-display);
+            font-size: 4.5rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary-color);
+            background-color: var(--surface-color);
+            padding: 1rem;
+            border-radius: 1rem;
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 0 20px rgba(201, 164, 78, 0.2);
+            letter-spacing: 0.1em;
+            animation: pulse-gold 3s infinite;
+        }
+        
+        #buff-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .buff-item {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            width: 80%;
+            max-width: 500px;
+            text-align: left;
+        }
+        .buff-item.buff { background-color: rgba(130, 201, 124, 0.1); border: 1px solid var(--success-color); }
+        .buff-item.debuff { background-color: rgba(199, 66, 66, 0.1); border: 1px solid var(--danger-color); }
+
+        .buff-header { font-weight: bold; font-size: 0.9rem; }
+        .buff-header.buff { color: var(--success-color); }
+        .buff-header.debuff { color: var(--danger-color); }
+        .buff-description { font-size: 0.8rem; color: var(--text-color); }
+
+        #punishmentArea, #timersArea { display: flex; flex-direction: column; gap: 0.5rem; }
+        .status-item { border-radius: 0.5rem; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .status-item span { font-weight: bold; }
+        .timer-item { background-color: rgba(201, 164, 78, 0.1); border: 1px solid var(--primary-color); }
+        .timer-item span { color: var(--primary-color); }
+        .punishment-item { background-color: rgba(199, 66, 66, 0.15); border: 1px solid var(--danger-color); }
+        .punishment-item span { color: var(--danger-color); }
+
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+        
+        .control-card {
+            background-color: var(--surface-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+        }
+        .control-card:hover { border-color: var(--primary-color); }
+
+        .control-card h3 { font-family: var(--font-display); margin: 0 0 0.5rem 0; font-size: 1.7rem; color: var(--primary-color); text-align: center; }
+        .control-card .charge-info { font-size: 0.8rem; color: var(--text-muted-color); background-color: #111; padding: 0.2rem 0.5rem; border-radius: 0.5rem; }
+        .control-card .charge-cooldown { font-size: 0.8rem; color: var(--text-muted-color); margin: 0.5rem 0 0 0; }
+        .control-card .description { margin: 0.5rem 0; font-size: 0.9rem; color: var(--text-muted-color); text-align: center; min-height: 2.7em; }
+        .charge-count-display { font-size: 0.9rem; color: var(--secondary-color); margin-top: 0.5rem; font-weight: bold; }
+
+        .btn { font-family: var(--font-display); padding: 0.75rem 1.5rem; font-size: 1.1rem; font-weight: 700; border: 1px solid var(--primary-color); border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem; background: transparent; color: var(--primary-color); }
+        .btn:hover:not(:disabled) { background-color: var(--primary-color); color: var(--bg-color); box-shadow: 0 0 15px var(--primary-color); }
+        .btn-danger { border-color: var(--danger-color); color: var(--danger-color); }
+        .btn-danger:hover:not(:disabled) { background-color: var(--danger-color); color: white; box-shadow: 0 0 15px var(--danger-color); }
+        .btn:disabled { border-color: #444; color: #666; cursor: not-allowed; }
+        
+        .dice-area { display: flex; gap: 2rem; margin-top: 0.5rem; padding: 1rem; background-color: #111; border-radius: 0.5rem; }
+        .dice-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .dice-label { font-size: 1rem; font-weight: 500; color: var(--text-muted-color); }
+        .dice { width: 60px; height: 60px; background-color: #fff; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: var(--bg-color); font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 3rem; }
+
+        .slot-machine-container { width: 100%; max-width: 300px; height: 80px; background: #111; border-radius: 10px; overflow: hidden; position: relative; border: 3px solid var(--primary-color); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); margin: 0.5rem 0; }
+        .slot-reels { position: absolute; top: 0; left: 0; right: 0; transition: top 4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .slot-item { height: 80px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; }
+        .slot-item.reward { color: var(--success-color); }
+        .slot-item.penalty { color: var(--danger-color); }
+        .slot-item.special { color: var(--secondary-color); }
+
+        .log-section { background-color: var(--surface-color); border-radius: 1rem; padding: 1rem; border: 1px solid #333; }
+        .log-section h3 { font-family: var(--font-display); margin-top: 0; color: var(--primary-color); border-bottom: 1px solid var(--text-muted-color); padding-bottom: 0.5rem; }
+        #eventLog { height: 250px; overflow-y: auto; padding-right: 10px; }
+        #eventLog p { margin: 0.5rem 0; font-size: 0.875rem; border-bottom: 1px solid #444; padding-bottom: 0.5rem; }
+        #eventLog p:last-child { border-bottom: none; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: var(--surface-color); padding: 1.5rem 2rem; border-radius: 1rem; text-align: center; width: 95%; max-width: 700px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 1.5rem; border: 1px solid var(--primary-color); }
+        .modal-content h2 { font-family: var(--font-display); color: var(--primary-color); }
+        
+        /* Roulette Styles */
+        .roulette-container { position: relative; width: 300px; height: 300px; margin: 1rem auto; }
+        #rouletteWheel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--primary-color); transition: transform 6s cubic-bezier(0.2, 0.8, 0.2, 1); transform-style: preserve-3d; }
+        #rouletteWheel::before { content: ''; position: absolute; width: 90%; height: 90%; top: 5%; left: 5%; background: #333; border-radius: 50%; }
+        .roulette-slice-text { position: absolute; top: 50%; left: 50%; width: 50%; height: 50%; transform-origin: 0 0; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+        #roulettePointer { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid var(--primary-color); }
+        #rouletteCurrentBet { font-weight: bold; color: var(--secondary-color); min-height: 1.2em; }
+
+        /* Three Doors Styles */
+        #threeDoorsContainer { display: flex; justify-content: space-around; gap: 1rem; margin: 1rem 0; }
+        .door { width: 120px; height: 180px; border: 3px solid var(--primary-color); border-radius: 10px; background: linear-gradient(145deg, #4a2c0f, #2a1a09); cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--primary-color); box-shadow: inset 0 0 15px #000; }
+        .door:hover { transform: scale(1.05); }
+        .door.selected { border-color: var(--secondary-color); box-shadow: 0 0 20px var(--secondary-color); }
+        .door.opened { background: #111; cursor: default; }
+        .door .door-content { font-size: 1.2rem; font-weight: bold; padding: 0.5rem; text-align: center; }
+        #threeDoorsChoices { display: none; gap: 1rem; justify-content: center; }
+
+        /* Monopoly Styles */
+        #monopolyBoard { display: grid; /* grid-template-columns is set by JS */ gap: 4px; background: #111; padding: 8px; border-radius: 8px; position: relative; }
+        .board-cell { width: 100%; padding-top: 100%; position: relative; border-radius: 4px; font-size: 9px; font-weight: bold; color: white; line-height: 1.1; }
+        .board-cell-content { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; padding: 2px; flex-direction: column; text-align: center;}
+        .cell-start { background-color: var(--primary-color); }
+        .cell-reward { background-color: var(--success-color); }
+        .cell-penalty { background-color: var(--danger-color); }
+        .cell-buff { background-color: #3a9a9a; }
+        .cell-debuff { background-color: #8b008b; }
+        .cell-special { background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); }
+        #playerPiece { position: absolute; width: 20px; height: 20px; background-color: var(--secondary-color); border-radius: 50%; border: 2px solid white; transition: all 0.5s ease-in-out; z-index: 5; box-shadow: 0 0 10px var(--secondary-color); }
+        #monopolyInfo { display: flex; justify-content: space-around; align-items: center; gap: 1rem; }
+        #monopolyEventText { flex: 1; text-align: center; font-weight: bold; }
+
+        /* Lotto Styles */
+        #lottoGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin: 1rem 0; }
+        .lotto-number { padding: 0.8rem; border: 1px solid var(--text-muted-color); border-radius: 50%; cursor: pointer; transition: all 0.2s ease; }
+        .lotto-number.selected { background-color: var(--primary-color); color: var(--bg-color); border-color: var(--primary-color); }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header and Timer -->
+        <header class="header">
+            <h1>惡魔的詛咒</h1>
+        </header>
+        <div id="timerDisplay" class="timer-display"><span id="timerText">00:00:00</span></div>
+        <div id="buff-area"></div>
+        
+        <!-- Punishments -->
+        <div id="timersArea"></div>
+        <div id="punishmentArea"></div>
+
+        <!-- Unlock Section -->
+        <div id="unlockSection" style="display: none; text-align: center;">
+             <p>✨ 詛咒計時器已淨化！準備好迎接最終對決了嗎？ ✨</p>
+            <button id="unlockBtn" class="btn" style="max-width: 300px; margin: auto;">⚔️ 最終對決</button>
+        </div>
+
+        <!-- Main Controls -->
+        <div class="controls-grid">
+            <div id="diceCard" class="control-card">
+                <h3>與小惡魔的賭局</h3>
+                <p class="charge-info">每 30 分鐘恢復 1 點</p>
+                <div class="dice-area">
+                    <div class="dice-container"><span class="dice-label">你</span><div id="playerDice" class="dice">?</div></div>
+                    <div class="dice-container"><span class="dice-label">惡魔</span><div id="botDice" class="dice">?</div></div>
+                </div>
+                <button id="diceBtn" class="btn">擲骰</button>
+                <p class="charge-count-display">靈魂之力: <span id="diceCharges">0</span></p>
+                <p class="charge-cooldown" id="diceCooldown">下次恢復: ...</p>
+            </div>
+            
+            <div id="slotCard" class="control-card">
+                <h3>命運祭壇</h3>
+                <p class="charge-info">每 30 分鐘恢復 1 點</p>
+                <div class="slot-machine-container"><div id="slotReels" class="slot-reels"></div></div>
+                <button id="slotBtn" class="btn">祈禱</button>
+                <p class="charge-count-display">靈魂之力: <span id="slotCharges">0</span></p>
+                <p class="charge-cooldown" id="slotCooldown">下次恢復: ...</p>
+            </div>
+
+            <div id="rouletteCard" class="control-card">
+                <h3>魔神的輪盤</h3>
+                <p class="charge-info">每 3 小時恢復 1 點</p>
+                <p class="description">直面魔神設下的致命賭局，高風險也可能帶來高回報。</p>
+                <button id="rouletteBtn" class="btn">轉動</button>
+                <p class="charge-count-display">靈魂之力: <span id="rouletteCharges">0</span></p>
+                <p class="charge-cooldown" id="rouletteCooldown">下次恢復: ...</p>
+            </div>
+
+            <div id="monopolyCard" class="control-card">
+                <h3>星辰棋盤</h3>
+                <p class="charge-info">每 1 小時恢復 1 點</p>
+                <p class="description">在精神世界中展開星辰之旅，觸發古老符文的力量。</p>
+                <button id="monopolyBtn" class="btn">啟程</button>
+                <p class="charge-count-display">靈魂之力: <span id="monopolyCharges">0</span></p>
+                <p class="charge-cooldown" id="monopolyCooldown">下次恢復: ...</p>
+            </div>
+
+            <div id="lottoCard" class="control-card">
+                <h3>即時聖籤</h3>
+                <p class="charge-info">每 3 小時恢復 1 點</p>
+                <p class="description">向神諭祈求立即的啟示，看看命運數字是否站在你這邊。</p>
+                <button id="lottoBtn" class="btn">求籤</button>
+                <p class="charge-count-display">靈魂之力: <span id="lottoCharges">0</span></p>
+                <p class="charge-cooldown" id="lottoCooldown">下次恢復: ...</p>
+            </div>
+            
+            <div id="threeDoorsCard" class="control-card">
+                <h3>三門試煉</h3>
+                <p class="charge-info">每 4 小時恢復 1 點</p>
+                <p class="description">智慧與勇氣的終極考驗，門後是神恩還是墮落陷阱？</p>
+                <button id="threeDoorsBtn" class="btn">挑戰</button>
+                <p class="charge-count-display">靈魂之力: <span id="threeDoorsCharges">0</span></p>
+                <p class="charge-cooldown" id="threeDoorsCooldown">下次恢復: ...</p>
+            </div>
+        </div>
+
+        <!-- Log -->
+        <div class="log-section">
+            <h3>📜 試煉紀錄</h3>
+            <div id="eventLog"></div>
+        </div>
+
+        <button id="newChallengeBtn" class="btn btn-danger">接受新的試煉</button>
+    </div>
+    
+    <!-- Modals -->
+    <div id="difficultyModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>選擇試煉強度</h2>
+            <p>詛咒的強度將決定所有聖光淨化與魔神低語的效果。</p>
+            <div id="difficultySelection">
+                <button class="btn" data-level="1" data-multiplier="1.0">等級1 (新手 x1.0)</button>
+                <button class="btn" data-level="2" data-multiplier="1.5">等級2 (熟練 x1.5)</button>
+                <button class="btn" data-level="3" data-multiplier="2.25">等級3 (精英 x2.25)</button>
+                <button class="btn" data-level="4" data-multiplier="3.375">等級4 (專家 x3.375)</button>
+                <button class="btn btn-danger" data-level="5" data-multiplier="5.0625">等級5 (傳說 x5.0625)</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="finalUnlockModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="finalUnlockTitle"></h2>
+            <p id="finalUnlockMessage"></p>
+            <button id="finalUnlockCloseBtn" class="btn">我明白了</button>
+        </div>
+    </div>
+
+    <div id="rouletteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>魔神的輪盤</h2>
+            <div class="roulette-container">
+                <div id="rouletteWheel"></div>
+                <div id="roulettePointer"></div>
+            </div>
+            <p id="rouletteResultText">下注來決定你的命運！</p>
+            <p id="rouletteCurrentBet"></p>
+            <div id="rouletteBets">
+                <p><strong>下注將預先支付時間作為祭品！</strong></p>
+                <button class="btn" data-bet-type="color" data-bet-value="red">穩健下注: 紅色 (-15m)</button>
+                <button class="btn" data-bet-type="color" data-bet-value="black">穩健下注: 黑色 (-15m)</button>
+                <br>
+                <input type="number" id="specificBetInput" placeholder="精準下注格號 (0-11)" min="0" max="11" style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #888; background: #333; color: white; width: 200px; margin-right: 10px;">
+                <button id="specificBetBtn" class="btn">下注 (-30m)</button>
+            </div>
+            <div>
+                <button id="spinRouletteBtn" class="btn" style="margin-top: 1rem;">開始轉動！</button>
+                <button class="btn" onclick="closeModal('rouletteModal')">離開</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="monopolyModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>星辰棋盤</h2>
+            <div id="monopolyBoard"><div id="playerPiece"></div></div>
+            <div id="monopolyInfo">
+                <div id="monopolyDiceResult" class="dice">?</div>
+                <button id="monopolyRollBtn" class="btn" style="width: auto;">擲骰前進</button>
+                <p id="monopolyEventText">擲骰來決定你的命運！</p>
+            </div>
+            <button class="btn" onclick="closeModal('monopolyModal')">離開棋盤</button>
+        </div>
+    </div>
+
+    <div id="lottoModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>即時聖籤</h2>
+            <p>選擇 5 個幸運數字 (1-30)。</p>
+            <div id="lottoGrid"></div>
+            <p>已選號碼: <span id="lottoSelectionText"></span></p>
+            <p id="lottoResultArea" style="font-weight: bold;"></p>
+            <div>
+                <button id="drawLottoBtn" class="btn" disabled>立即開獎</button>
+                <button class="btn" onclick="closeModal('lottoModal')">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scribeModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>心志試煉：抄寫聖言</h2>
+            <p>請在現實中抄寫以下文字一遍，完成後點擊按鈕。</p>
+            <p id="scribeText" style="background: #111; padding: 1rem; border-radius: 0.5rem; border: 1px solid #444;"></p>
+            <button id="scribeConfirmBtn" class="btn">我已完成抄寫</button>
+        </div>
+    </div>
+
+    <div id="threeDoorsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>三門試煉</h2>
+            <p id="threeDoorsMessage">選擇一扇門，看看你的命運如何！</p>
+            <div id="threeDoorsContainer">
+                <div class="door" data-index="0"><span>?</span></div>
+                <div class="door" data-index="1"><span>?</span></div>
+                <div class="door" data-index="2"><span>?</span></div>
+            </div>
+            <div id="threeDoorsChoices">
+                <button id="stickBtn" class="btn">堅持選擇</button>
+                <button id="switchBtn" class="btn">交換選擇</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // --- 惡魔的詛咒 v1.0 遊戲腳本 ---
+    
+    // --- DOM 元素 ---
+    const elements = {
+        timerText: document.getElementById('timerText'),
+        unlockSection: document.getElementById('unlockSection'),
+        unlockBtn: document.getElementById('unlockBtn'),
+        newChallengeBtn: document.getElementById('newChallengeBtn'),
+        eventLog: document.getElementById('eventLog'),
+        buffArea: document.getElementById('buff-area'),
+        
+        diceBtn: document.getElementById('diceBtn'),
+        diceChargesSpan: document.getElementById('diceCharges'),
+        playerDiceDiv: document.getElementById('playerDice'),
+        botDiceDiv: document.getElementById('botDice'),
+        diceCooldown: document.getElementById('diceCooldown'),
+        
+        slotBtn: document.getElementById('slotBtn'),
+        slotReels: document.getElementById('slotReels'),
+        slotChargesSpan: document.getElementById('slotCharges'),
+        slotCooldown: document.getElementById('slotCooldown'),
+
+        rouletteBtn: document.getElementById('rouletteBtn'),
+        rouletteChargesSpan: document.getElementById('rouletteCharges'),
+        rouletteModal: document.getElementById('rouletteModal'),
+        rouletteWheel: document.getElementById('rouletteWheel'),
+        rouletteResultText: document.getElementById('rouletteResultText'),
+        rouletteCurrentBet: document.getElementById('rouletteCurrentBet'),
+        spinRouletteBtn: document.getElementById('spinRouletteBtn'),
+        specificBetBtn: document.getElementById('specificBetBtn'),
+        rouletteCooldown: document.getElementById('rouletteCooldown'),
+
+        monopolyBtn: document.getElementById('monopolyBtn'),
+        monopolyChargesSpan: document.getElementById('monopolyCharges'),
+        monopolyModal: document.getElementById('monopolyModal'),
+        monopolyBoard: document.getElementById('monopolyBoard'),
+        monopolyRollBtn: document.getElementById('monopolyRollBtn'),
+        monopolyDiceResult: document.getElementById('monopolyDiceResult'),
+        monopolyEventText: document.getElementById('monopolyEventText'),
+        monopolyCooldown: document.getElementById('monopolyCooldown'),
+
+        lottoBtn: document.getElementById('lottoBtn'),
+        lottoModal: document.getElementById('lottoModal'),
+        lottoGrid: document.getElementById('lottoGrid'),
+        lottoSelectionText: document.getElementById('lottoSelectionText'),
+        drawLottoBtn: document.getElementById('drawLottoBtn'),
+        lottoResultArea: document.getElementById('lottoResultArea'),
+        lottoCharges: document.getElementById('lottoCharges'),
+        lottoCooldown: document.getElementById('lottoCooldown'),
+        
+        threeDoorsBtn: document.getElementById('threeDoorsBtn'),
+        threeDoorsModal: document.getElementById('threeDoorsModal'),
+        threeDoorsContainer: document.getElementById('threeDoorsContainer'),
+        threeDoorsMessage: document.getElementById('threeDoorsMessage'),
+        threeDoorsChoices: document.getElementById('threeDoorsChoices'),
+        threeDoorsCharges: document.getElementById('threeDoorsCharges'),
+        threeDoorsCooldown: document.getElementById('threeDoorsCooldown'),
+        
+        timersArea: document.getElementById('timersArea'),
+        punishmentArea: document.getElementById('punishmentArea'),
+        scribeModal: document.getElementById('scribeModal'),
+        scribeText: document.getElementById('scribeText'),
+        scribeConfirmBtn: document.getElementById('scribeConfirmBtn'),
+
+        difficultyModal: document.getElementById('difficultyModal'),
+        difficultySelection: document.getElementById('difficultySelection'),
+        finalUnlockModal: document.getElementById('finalUnlockModal'),
+        finalUnlockCloseBtn: document.getElementById('finalUnlockCloseBtn'),
+    };
+
+    // --- 遊戲狀態 ---
+    let gameState = {};
+    let timerInterval;
+    let monopolyCellCoords = [];
+    let lottoSelection = [];
+    let threeDoorsState = {};
+
+    const defaultGameState = {
+        startTime: null, targetTime: null, totalChallengeTime: 0,
+        difficulty: 1, difficultyMultiplier: 1.0,
+        chargeTimers: { dice: 0, slot: 0, roulette: 0, monopoly: 0, lotto: 0, threeDoors: 0 },
+        diceCharges: 1, slotCharges: 1, rouletteCharges: 1, monopolyCharges: 1, lottoCharges: 1, threeDoorsCharges: 1,
+        timers: [], 
+        punishments: {}, 
+        monopolyPosition: 0, monopolyBoardMap: [],
+        activeBuffs: {}, 
+        lastSlotResult: null, 
+        eventLog: [],
+    };
+
+    // --- 遊戲數據 ---
+    const intervals = {
+        dice: 30 * 60 * 1000, 
+        slot: 30 * 60 * 1000,
+        roulette: 3 * 60 * 60 * 1000, 
+        monopoly: 1 * 60 * 60 * 1000,
+        lotto: 3 * 60 * 60 * 1000,
+        threeDoors: 4 * 60 * 60 * 1000,
+    };
+    
+    const scribeQuotes = [
+        "意志的勝利，始於最微小的堅持。",
+        "黑暗愈是深邃，尋找光明的決心便愈是熾熱。",
+        "每一次呼吸，都是對抗詛咒的無聲戰吼。",
+        "真正的勇者，不是從不畏懼，而是在顫抖中依然前行。",
+        "束縛你的不是鎖鏈，而是你以為無法掙脫的念頭。"
+    ];
+
+    const buffDescriptions = {
+        '強化': '下次「與小惡魔的賭局」勝利時獎勵翻倍 (一次性)。',
+        '預知': '下次「命運祭壇」的結果將被預先揭示 (一次性)。',
+        '幸運': '下次「命運祭壇」將移除所有負面結果 (一次性)。',
+        '加速': '所有靈魂之力的恢復速度 x2。',
+        '堅韌': '所有「魔神低語」效果減少 50%。',
+        '富足': '下次通過「星辰棋盤」起點時獎勵翻倍 (一次性)。',
+        '虛弱': '下次「與小惡魔的賭局」失敗時懲罰翻倍 (一次性)。',
+        '厄運': '下次「命運祭壇」將移除所有正面結果 (一次性)。',
+        '遲緩': '所有靈魂之力的恢復暫時停止。',
+        '脆弱': '所有「魔神低語」效果增加 50%。',
+    };
+    
+    const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    const slotOutcomes = [
+        { text: "-4h", type: 'reward', value: -4 * 3600 }, { text: "-2h", type: 'reward', value: -2 * 3600 },
+        { text: "-1h", type: 'reward', value: -1 * 3600 }, { text: "+4h", type: 'penalty', value: 4 * 3600 },
+        { text: "+2h", type: 'penalty', value: 2 * 3600 }, { text: "+1h", type: 'penalty', value: 1 * 3600 },
+        { text: "貞操鎖-30m", type: 'special', effect: 'reduce_timer', payload: 'chastity_lock' },
+        { text: "體能試煉", type: 'special', effect: 'add_punishment', payload: 'random_physical' },
+    ];
+    const rouletteOutcomes = [
+        { text: "-24h", type: 'reward', value: -24*3600, color: 'gold' }, { text: "+24h", type: 'penalty', value: 24*3600, color: 'black' },
+        { text: "-3h", type: 'reward', value: -3*3600, color: 'red' }, { text: "+4h", type: 'penalty', value: 4*3600, color: 'black' },
+        { text: "-1h", type: 'reward', value: -1*3600, color: 'red' }, { text: "+2h", type: 'penalty', value: 2*3600, color: 'black' },
+        { text: "靈魂之力+1", type: 'special', effect: 'all_charges_plus_one', color: 'red' }, { text: "+1h", type: 'penalty', value: 1*3600, color: 'black' },
+        { text: "貞操鎖試煉", type: 'special', effect: 'add_timer', payload: 'chastity_lock' }, { text: "-1h", type: 'reward', value: -1*3600, color: 'red' },
+        { text: "體能試煉", type: 'special', effect: 'add_punishment', payload: 'random_physical' }, { text: "-3h", type: 'reward', value: -3*3600, color: 'red' },
+    ];
+
+    // --- Initialization ---
+    function initializeGame() {
+        loadState();
+        renderSlotMachine();
+        buildRouletteWheel();
+        buildLottoGrid();
+        
+        if (!gameState.targetTime) {
+            timerText.textContent = "00:00:00";
+            disableAllControls();
+            elements.unlockSection.style.display = 'none';
+            elements.newChallengeBtn.style.display = 'block';
+        } else {
+            startTimer();
+            elements.newChallengeBtn.style.display = 'none';
+            if (gameState.monopolyBoardMap.length > 0) renderMonopolyBoard();
+        }
+        updateUI();
+    }
+
+    // --- Core Game Loop & UI Updates ---
+    function startNewChallenge(level, multiplier) {
+        elements.difficultyModal.style.display = 'none';
+        const initialHours = Math.random() * 12 + 12; // Random 12-24 hours
+        const initialDuration = Math.floor(initialHours * 3600 * 1000 * multiplier); // Multiplied by difficulty
+        const now = Date.now();
+        
+        gameState = JSON.parse(JSON.stringify(defaultGameState));
+        gameState.difficulty = level;
+        gameState.difficultyMultiplier = multiplier;
+        gameState.startTime = now;
+        gameState.targetTime = now + initialDuration;
+        gameState.totalChallengeTime = initialDuration;
+        
+        // Setup initial charge timers
+        gameState.chargeTimers = {
+            dice: now + intervals.dice,
+            slot: now + intervals.slot,
+            roulette: now + intervals.roulette,
+            monopoly: now + intervals.monopoly,
+            lotto: now + intervals.lotto,
+            threeDoors: now + intervals.threeDoors,
+        };
+        
+        generateMonopolyBoard();
+        renderMonopolyBoard();
+
+        logEvent(`🌱 等級 ${level} (x${multiplier}) 試煉開始！初始詛咒時長：${formatDuration(initialDuration / 1000)}。`);
+        saveState();
+        startTimer();
+        elements.newChallengeBtn.style.display = 'none';
+        elements.unlockSection.style.display = 'none';
+        updateUI();
+    }
+
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(update, 1000);
+    }
+
+    function update() {
+        if (!gameState.targetTime) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            return;
+        }
+
+        const now = Date.now();
+        let remaining = Math.round((gameState.targetTime - now) / 1000);
+
+        if (remaining <= 0) {
+            elements.timerText.textContent = "00:00:00";
+            if(timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+            gameState.targetTime = null; 
+            saveState();
+            elements.unlockSection.style.display = 'block';
+            elements.unlockBtn.disabled = false;
+            disableAllControls();
+        } else {
+            updateCharges();
+            updateBuffs();
+            updateAllTimers();
+        }
+        
+        updateTimerDisplay();
+        updateButtonStates();
+        updateCooldownDisplays();
+    }
+    
+    function updateCharges() {
+        const now = Date.now();
+        const buff = getActiveBuff('遲緩');
+        if (buff) {
+            const timeToAdd = now - (gameState.lastChargeCalcTime || now);
+            Object.keys(gameState.chargeTimers).forEach(key => {
+                gameState.chargeTimers[key] += timeToAdd;
+            });
+            gameState.lastChargeCalcTime = now;
+            return;
+        }
+        
+        let stateChanged = false;
+        const speedMultiplier = getActiveBuff('加速') ? 2 : 1;
+
+        Object.keys(gameState.chargeTimers).forEach(key => {
+            const interval = intervals[key] / speedMultiplier;
+            if (now >= gameState.chargeTimers[key]) {
+                const chargesToAdd = Math.floor((now - gameState.chargeTimers[key]) / interval) + 1;
+                gameState[key + 'Charges'] += chargesToAdd;
+                gameState.chargeTimers[key] += chargesToAdd * interval;
+                stateChanged = true;
+            }
+        });
+        
+        gameState.lastChargeCalcTime = now;
+        if (stateChanged) saveState();
+    }
+    
+    function updateCooldownDisplays() {
+        const now = Date.now();
+        const buff = getActiveBuff('遲緩');
+        
+        Object.keys(elements).forEach(key => {
+            if (key.endsWith('Cooldown')) {
+                const feature = key.replace('Cooldown', '');
+                if (gameState.chargeTimers && gameState.chargeTimers[feature] !== undefined) {
+                    if (buff) {
+                        elements[key].textContent = '下次恢復: 暫停中';
+                    } else {
+                        const remaining = Math.max(0, gameState.chargeTimers[feature] - now);
+                        elements[key].textContent = `下次恢復: ${formatDuration(remaining / 1000)}`;
+                    }
+                }
+            }
+        });
+    }
+
+    function updateBuffs() {
+        const now = Date.now();
+        let changed = false;
+        for (const id in gameState.activeBuffs) {
+            if (now > gameState.activeBuffs[id].expiry && gameState.activeBuffs[id].value !== true) {
+                logEvent(`✨ 效果結束：[${gameState.activeBuffs[id].name}]`);
+                delete gameState.activeBuffs[id];
+                changed = true;
+            }
+        }
+        if (changed) {
+            renderBuffs();
+            saveState();
+        }
+    }
+
+    function updateUI() {
+        updateTimerDisplay();
+        updateButtonStates();
+        updateCooldownDisplays();
+        renderLog();
+        renderBuffs();
+        renderAllTimers();
+        renderPunishments();
+    }
+    
+    function updateButtonStates() {
+        elements.diceChargesSpan.textContent = gameState.diceCharges;
+        elements.diceBtn.disabled = gameState.diceCharges <= 0;
+        elements.slotChargesSpan.textContent = gameState.slotCharges;
+        elements.slotBtn.disabled = gameState.slotCharges <= 0;
+        elements.rouletteChargesSpan.textContent = gameState.rouletteCharges;
+        elements.rouletteBtn.disabled = gameState.rouletteCharges <= 0;
+        elements.monopolyChargesSpan.textContent = gameState.monopolyCharges;
+        elements.monopolyBtn.disabled = gameState.monopolyCharges <= 0;
+        elements.lottoCharges.textContent = gameState.lottoCharges;
+        elements.lottoBtn.disabled = gameState.lottoCharges <= 0;
+        elements.threeDoorsCharges.textContent = gameState.threeDoorsCharges;
+        elements.threeDoorsBtn.disabled = gameState.threeDoorsCharges <= 0;
+    }
+
+    function disableAllControls() {
+        elements.diceBtn.disabled = true;
+        elements.slotBtn.disabled = true;
+        elements.rouletteBtn.disabled = true;
+        elements.monopolyBtn.disabled = true;
+        elements.lottoBtn.disabled = true;
+        elements.threeDoorsBtn.disabled = true;
+    }
+
+    // --- Utility Functions ---
+    function formatDuration(totalSeconds) {
+        if (totalSeconds < 0) totalSeconds = 0;
+        const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const s = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    function logEvent(message) {
+        const timestamp = new Date().toLocaleString('zh-TW', { hour12: false });
+        const fullMessage = `[${timestamp}] ${message}`;
+        gameState.eventLog.unshift(fullMessage);
+        if (gameState.eventLog.length > 100) gameState.eventLog.pop();
+        renderLog();
+    }
+    
+    function saveState() {
+        localStorage.setItem('devilCurseGameState_v1.1', JSON.stringify(gameState));
+    }
+
+    function loadState() {
+        const savedState = localStorage.getItem('devilCurseGameState_v1.1');
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            gameState = { ...defaultGameState, ...parsedState };
+            gameState.activeBuffs = parsedState.activeBuffs || {};
+            gameState.chargeTimers = parsedState.chargeTimers || { dice: 0, slot: 0, roulette: 0, monopoly: 0, lotto: 0, threeDoors: 0 };
+            gameState.timers = parsedState.timers || [];
+            gameState.punishments = parsedState.punishments || {};
+        } else {
+            gameState = JSON.parse(JSON.stringify(defaultGameState));
+        }
+    }
+
+    function modifyTime(seconds, useMultiplier = true) {
+        let multiplier = useMultiplier ? gameState.difficultyMultiplier : 1;
+        
+        const toughBuff = getActiveBuff('堅韌');
+        const fragileBuff = getActiveBuff('脆弱');
+        if (seconds > 0 && toughBuff) multiplier *= 0.5;
+        if (seconds > 0 && fragileBuff) multiplier *= 1.5;
+
+        const finalSeconds = Math.round(seconds * multiplier);
+        if (!gameState.targetTime) gameState.targetTime = Date.now();
+        gameState.targetTime += finalSeconds * 1000;
+
+        const msg = finalSeconds > 0 ? `魔神低語: +${formatDuration(Math.abs(finalSeconds))}` : `聖光淨化: -${formatDuration(Math.abs(finalSeconds))}`;
+        logEvent(`⏱️ ${msg}。`);
+        updateTimerDisplay();
+        saveState();
+    }
+    
+    function getActiveBuff(name) {
+        for (const id in gameState.activeBuffs) {
+            if (gameState.activeBuffs[id].name === name) return gameState.activeBuffs[id];
+        }
+        return null;
+    }
+
+    function addBuff(name, durationMinutes, value = null) {
+        const id = Date.now();
+        const expiry = id + durationMinutes * 60 * 1000;
+        gameState.activeBuffs[id] = { name, expiry, value };
+        logEvent(`🟩 神聖加護：獲得 [${name}]！`);
+        renderBuffs();
+    }
+    
+    function renderBuffs() {
+        elements.buffArea.innerHTML = '';
+        for (const id in gameState.activeBuffs) {
+            const buff = gameState.activeBuffs[id];
+            const isDebuff = ['虛弱', '厄運', '遲緩', '脆弱'].includes(buff.name);
+            const remaining = Math.ceil((buff.expiry - Date.now()) / 60000);
+            
+            const el = document.createElement('div');
+            el.className = `buff-item ${isDebuff ? 'debuff' : 'buff'}`;
+            
+            const header = document.createElement('div');
+            header.className = `buff-header ${isDebuff ? 'debuff' : 'buff'}`;
+            const durationText = buff.value === true ? '(一次性)' : `(剩餘 ${remaining}m)`;
+            header.textContent = `[${buff.name}] ${durationText}`;
+            
+            const description = document.createElement('div');
+            description.className = 'buff-description';
+            description.textContent = buffDescriptions[buff.name] || '未知效果';
+            
+            el.appendChild(header);
+            el.appendChild(description);
+            
+            elements.buffArea.appendChild(el);
+        }
+    }
+
+    function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+    function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+    
+    // --- Render Functions ---
+    function renderLog() { elements.eventLog.innerHTML = gameState.eventLog.map(msg => `<p>${msg}</p>`).join(''); }
+    function updateTimerDisplay() {
+        const remaining = gameState.targetTime ? Math.round((gameState.targetTime - Date.now()) / 1000) : 0;
+        elements.timerText.textContent = formatDuration(Math.max(0, remaining));
+    }
+    function renderSlotMachine() {
+        elements.slotReels.innerHTML = '';
+        const reelItems = [...slotOutcomes, ...slotOutcomes, ...slotOutcomes];
+        reelItems.forEach(item => {
+            const itemEl = document.createElement('div');
+            itemEl.className = `slot-item ${item.type}`;
+            itemEl.textContent = item.text;
+            elements.slotReels.appendChild(itemEl);
+        });
+    }
+
+    // --- Feature Implementations ---
+
+    // 1. Dice Duel
+    function rollDice() {
+        if (gameState.diceCharges <= 0) return;
+        gameState.diceCharges--;
+
+        const playerRoll1 = Math.floor(Math.random() * 6) + 1;
+        const playerRoll2 = Math.floor(Math.random() * 6) + 1;
+        const botRoll1 = Math.floor(Math.random() * 6) + 1;
+        const botRoll2 = Math.floor(Math.random() * 6) + 1;
+        let playerSum = playerRoll1 + playerRoll2;
+        let botSum = botRoll1 + botRoll2;
+
+        elements.playerDiceDiv.textContent = playerSum;
+        elements.botDiceDiv.textContent = botSum;
+        
+        let difference = playerSum - botSum;
+        let timeChangeSeconds = difference * -30 * 60;
+        
+        const strengthenBuff = getActiveBuff('強化');
+        const weakenBuff = getActiveBuff('虛弱');
+        
+        logEvent(`🎲 與小惡魔的賭局：你擲出 ${playerSum} 點，惡魔擲出 ${botSum} 點。`);
+        
+        if (timeChangeSeconds < 0 && strengthenBuff) {
+            timeChangeSeconds *= 2;
+            logEvent(`💪[強化]效果觸發，聖光淨化之力翻倍！`);
+            delete gameState.activeBuffs[Object.keys(strengthenBuff)[0]]; // Consume buff
+        }
+        if (timeChangeSeconds > 0 && weakenBuff) {
+            timeChangeSeconds *= 2;
+            logEvent(`💀[虛弱]效果觸發，魔神低語之力翻倍！`);
+            delete gameState.activeBuffs[Object.keys(weakenBuff)[0]]; // Consume buff
+        }
+
+        if (timeChangeSeconds !== 0) {
+             modifyTime(timeChangeSeconds);
+        } else {
+            logEvent(`🎲 平手！詛咒沒有變化。`);
+        }
+        
+        updateUI();
+        saveState();
+    }
+
+    // 2. Slot Machine
+    function pullSlotMachine() {
+        if (gameState.slotCharges <= 0) return;
+        gameState.slotCharges--;
+        elements.slotBtn.disabled = true;
+
+        let currentPool = [...slotOutcomes];
+        const luckyBuff = getActiveBuff('幸運');
+        const unluckyBuff = getActiveBuff('厄運');
+        const foresightBuff = getActiveBuff('預知');
+        
+        if (luckyBuff) {
+            currentPool = currentPool.filter(o => o.type !== 'penalty');
+            logEvent('🍀[幸運]神恩觸發，祭壇移除了所有惡意！');
+            delete gameState.activeBuffs[Object.keys(luckyBuff)[0]];
+        }
+        if (unluckyBuff) {
+            currentPool = currentPool.filter(o => o.type !== 'reward');
+            logEvent('😈[厄運]詛咒觸發，祭壇移除了所有神恩！');
+            delete gameState.activeBuffs[Object.keys(unluckyBuff)[0]];
+        }
+
+        const outcome = currentPool[Math.floor(Math.random() * currentPool.length)];
+        
+        if (foresightBuff) {
+            logEvent(`👁️[預知]神恩觸發，你預見了祭壇的回應是「${outcome.text}」！`);
+            delete gameState.activeBuffs[Object.keys(foresightBuff)[0]];
+        }
+        
+        const visualIndex = slotOutcomes.indexOf(outcome);
+        const basePosition = slotOutcomes.length * 80;
+        const targetPosition = basePosition + (visualIndex * 80);
+        
+        elements.slotReels.style.transition = 'none';
+        elements.slotReels.style.top = '0px';
+
+        setTimeout(() => {
+            elements.slotReels.style.transition = 'top 4s cubic-bezier(0.25, 1, 0.5, 1)';
+            elements.slotReels.style.top = `-${targetPosition}px`;
+        }, 50);
+
+        setTimeout(() => {
+            logEvent(`🎰 命運祭壇的回應是：「${outcome.text}」。`);
+            gameState.lastSlotResult = outcome;
+            if (outcome.value) {
+                modifyTime(outcome.value);
+            } else if (outcome.effect) {
+                handleSpecialOutcome(outcome.effect, outcome.payload);
+            }
+            updateUI();
+            saveState();
+        }, 4100);
+    }
+
+    // 3. Roulette
+    function buildRouletteWheel() {
+        elements.rouletteWheel.innerHTML = '';
+        const sliceAngle = 360 / rouletteOutcomes.length;
+        const colors = rouletteOutcomes.map(s => {
+            if (s.color === 'gold') return '#c9a44e';
+            if (s.color === 'red') return '#c74242';
+            return '#1C1C1C';
+        });
+        
+        let gradientString = 'conic-gradient(';
+        for (let i = 0; i < colors.length; i++) {
+            gradientString += `${colors[i]} ${i * sliceAngle}deg, ${colors[i]} ${(i + 1) * sliceAngle}deg`;
+            if (i < colors.length - 1) {
+                gradientString += ', ';
+            }
+        }
+        gradientString += ')';
+        elements.rouletteWheel.style.background = gradientString;
+
+        rouletteOutcomes.forEach((slice, i) => {
+            const textEl = document.createElement('div');
+            textEl.className = 'roulette-slice-text';
+            
+            const angle = (i * sliceAngle) + (sliceAngle / 2);
+            const radius = 105; // 150px (half of wheel) - some padding
+            const x = Math.sin(angle * Math.PI / 180) * radius;
+            const y = -Math.cos(angle * Math.PI / 180) * radius;
+            
+            textEl.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
+            textEl.textContent = slice.text;
+            textEl.style.color = slice.color === 'black' ? 'white' : 'black';
+            
+            elements.rouletteWheel.appendChild(textEl);
+        });
+    }
+
+    let currentBet = null;
+    function setupRoulette() {
+        if (gameState.rouletteCharges <= 0) return;
+        currentBet = null;
+        elements.rouletteResultText.textContent = '下注來決定你的命運！';
+        elements.rouletteCurrentBet.textContent = '目前下注：無';
+        elements.spinRouletteBtn.disabled = false;
+        elements.rouletteWheel.style.transition = 'none';
+        elements.rouletteWheel.style.transform = 'rotate(0deg)';
+        openModal('rouletteModal');
+    }
+
+    function placeRouletteBet(type, value) {
+        const cost = type === 'color' ? 15*60 : 30*60;
+        modifyTime(cost);
+        currentBet = { type, value };
+        elements.rouletteCurrentBet.textContent = `目前下注：${type === 'color' ? value === 'red' ? '紅色' : '黑色' : `號碼 ${value}`}`;
+        logEvent(`🎲 輪盤下注：${type === 'color' ? '顏色' : '號碼'} ${value}，獻祭了 ${cost/60} 分鐘。`);
+    }
+
+    function spinRoulette() {
+        if (gameState.rouletteCharges <= 0) return;
+        gameState.rouletteCharges--;
+        elements.spinRouletteBtn.disabled = true;
+
+        const randomIndex = Math.floor(Math.random() * rouletteOutcomes.length);
+        const outcome = rouletteOutcomes[randomIndex];
+        
+        const degrees = 360 * 5 + (360 - randomIndex * 30) - 15; // Spin 5 times + land on slice
+        elements.rouletteWheel.style.transition = 'transform 6s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        elements.rouletteWheel.style.transform = `rotate(${degrees}deg)`;
+        
+        setTimeout(() => {
+            elements.rouletteResultText.textContent = `結果是：${outcome.text}!`;
+            logEvent(`😈 魔神的輪盤結果：${outcome.text}！`);
+            let finalValue = outcome.value || 0;
+
+            // Check bet
+            if (currentBet) {
+                let win = false;
+                if (currentBet.type === 'color' && currentBet.value === outcome.color) win = true;
+                if (currentBet.type === 'specific' && currentBet.value == randomIndex) win = true; // Use == for type coercion
+
+                if (win && finalValue < 0) {
+                    const multiplier = currentBet.type === 'color' ? 2 : 3;
+                    finalValue *= multiplier;
+                    logEvent(`💰 下注成功！聖光淨化之力變為 ${multiplier} 倍！`);
+                } else if (win) {
+                    logEvent(`💰 下注成功！但結果不是時間獎勵。`);
+                } else {
+                    logEvent(`💸 下注失敗。`);
+                }
+            }
+
+            if (finalValue !== 0) modifyTime(finalValue);
+            if (outcome.effect) handleSpecialOutcome(outcome.effect, outcome.payload);
+            
+            updateUI();
+            saveState();
+        }, 6100);
+    }
+    
+    // 4. Monopoly
+    function generateMonopolyBoard() {
+        // Fixed board layout based on the user-provided image
+        const boardLayout = [
+            { type: 'start', text: '起點 (-3h)', value: -3 * 3600 }, // 0
+            { type: 'penalty', text: '+2h', value: 2 * 3600 }, // 1
+            { type: 'reward', text: '-1h', value: -1 * 3600 }, // 2
+            { type: 'buff', text: '幸運', effect: '幸運', duration: 0 }, // 3
+            { type: 'debuff', text: '厄運', effect: '厄運', duration: 0 }, // 4
+            { type: 'special', text: '移除貞操鎖', effect: 'remove_timer', payload: 'chastity_lock' }, // 5
+            { type: 'penalty', text: '+3h', value: 3 * 3600 }, // 6
+            { type: 'buff', text: '強化', effect: '強化', duration: 0 }, // 7
+            { type: 'debuff', text: '虛弱', effect: '虛弱', duration: 0 }, // 8
+            { type: 'special', text: '抄寫聖言', effect: 'add_punishment', payload: 'scribe_penance' }, // 9
+            { type: 'penalty', text: '+3h', value: 3 * 3600 }, // 10
+            { type: 'buff', text: '堅韌', effect: '堅韌', duration: 30 }, // 11
+            { type: 'debuff', text: '脆弱', effect: '脆弱', duration: 30 }, // 12
+            { type: 'penalty', text: '+2h', value: 2 * 3600 }, // 13
+            { type: 'reward', text: '-2h', value: -2 * 3600 }, // 14
+            { type: 'buff', text: '富足', effect: '富足', duration: 0 }, // 15
+            { type: 'special', text: '貞操鎖試煉', effect: 'add_timer', payload: 'chastity_lock' }, // 16
+            { type: 'reward', text: '-4h', value: -4 * 3600 }, // 17
+            { type: 'special', text: '複製拉霸(負)', effect: 'copy_slot_negative' }, // 18
+            { type: 'reward', text: '-1h', value: -1 * 3600 }, // 19
+            { type: 'reward', text: '-3h', value: -3 * 3600 }, // 20
+            { type: 'special', text: '體能試煉', effect: 'add_punishment', payload: 'random_physical' }, // 21
+            { type: 'penalty', text: '+4h', value: 4 * 3600 }, // 22
+            { type: 'special', text: '貞操鎖試煉', effect: 'add_timer', payload: 'chastity_lock' }, // 23
+            { type: 'reward', text: '-1h', value: -1 * 3600 }, // 24
+            { type: 'special', text: '靈魂之力+1', effect: 'all_charges_plus_one' }, // 25
+            { type: 'reward', text: '-2h', value: -2 * 3600 }, // 26
+            { type: 'reward', text: '-3h', value: -3 * 3600 }, // 27
+            { type: 'buff', text: '加速', effect: '加速', duration: 60 }, // 28
+            { type: 'special', text: '靈魂之力+1', effect: 'all_charges_plus_one' }, // 29
+            { type: 'reward', text: '-1h', value: -1 * 3600 }, // 30
+            { type: 'buff', text: '預知', effect: '預知', duration: 0 }, // 31
+            { type: 'reward', text: '-2h', value: -2 * 3600 }, // 32
+            { type: 'buff', text: '堅韌', effect: '堅韌', duration: 30 }, // 33
+            { type: 'penalty', text: '+2h', value: 2 * 3600 }, // 34
+            { type: 'penalty', text: '+2h', value: 2 * 3600 }, // 35
+        ];
+        gameState.monopolyBoardMap = boardLayout;
+    }
+    
+    function renderMonopolyBoard() {
+        const board = elements.monopolyBoard;
+        board.innerHTML = '';
+        monopolyCellCoords = [];
+        const size = 10; // 10x10 grid for this layout
+        
+        // Hardcode the path based on the image
+        // Top row (0-9)
+        for (let i = 0; i < 10; i++) monopolyCellCoords.push({ y: 0, x: i });
+        // Right col (10-18)
+        for (let i = 1; i < 10; i++) monopolyCellCoords.push({ y: i, x: 9 });
+        // Bottom row (19-27)
+        for (let i = 8; i >= 0; i--) monopolyCellCoords.push({ y: 9, x: i });
+        // Left col (28-35)
+        for (let i = 8; i >= 1; i--) monopolyCellCoords.push({ y: i, x: 0 });
+
+        // Change grid layout to 10x10
+        board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+        let grid = Array(size).fill(null).map(() => Array(size).fill(null));
+        monopolyCellCoords.forEach((coord, index) => {
+            if (grid[coord.y] && grid[coord.y][coord.x] === null) {
+                grid[coord.y][coord.x] = { ...gameState.monopolyBoardMap[index], index };
+            }
+        });
+
+        for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+                const cellEl = document.createElement('div');
+                if (grid[r][c]) {
+                    const cellData = grid[r][c];
+                    cellEl.className = `board-cell cell-${cellData.type}`;
+                    cellEl.innerHTML = `<div class="board-cell-content"><span>${cellData.index}</span><span>${cellData.text}</span></div>`;
+                }
+                board.appendChild(cellEl);
+            }
+        }
+        board.innerHTML += '<div id="playerPiece"></div>';
+        updatePlayerPiecePosition();
+    }
+
+
+    function updatePlayerPiecePosition() {
+        const playerPieceEl = document.getElementById('playerPiece');
+        if (!playerPieceEl || monopolyCellCoords.length === 0) return;
+        const {x, y} = monopolyCellCoords[gameState.monopolyPosition];
+        const cellWidth = elements.monopolyBoard.firstChild.offsetWidth;
+        playerPieceEl.style.top = `${y * (cellWidth + 4) + cellWidth/2 - playerPieceEl.offsetHeight/2}px`;
+        playerPieceEl.style.left = `${x * (cellWidth + 4) + cellWidth/2 - playerPieceEl.offsetWidth/2}px`;
+    }
+
+    function setupMonopoly() {
+        if (gameState.monopolyCharges <= 0) return;
+        elements.monopolyEventText.textContent = "擲骰來決定你的命運！";
+        elements.monopolyDiceResult.textContent = "?";
+        openModal('monopolyModal');
+        updatePlayerPiecePosition();
+    }
+
+    function rollMonopolyDice() {
+        if (gameState.monopolyCharges <= 0) return;
+        gameState.monopolyCharges--;
+        elements.monopolyRollBtn.disabled = true;
+
+        const roll = Math.floor(Math.random() * 6) + 1;
+        elements.monopolyDiceResult.textContent = diceFaces[roll - 1];
+        
+        const oldPosition = gameState.monopolyPosition;
+        const newPosition = (oldPosition + roll) % gameState.monopolyBoardMap.length;
+        
+        // Animate movement
+        let currentDisplayPos = oldPosition;
+        const moveInterval = setInterval(() => {
+            currentDisplayPos = (currentDisplayPos + 1) % gameState.monopolyBoardMap.length;
+            gameState.monopolyPosition = currentDisplayPos;
+            updatePlayerPiecePosition();
+            if (currentDisplayPos === newPosition) {
+                clearInterval(moveInterval);
+                // Landed, now trigger events
+                gameState.monopolyPosition = newPosition;
+                if (newPosition < oldPosition) {
+                    let reward = -3 * 3600;
+                    if (getActiveBuff('富足')) {
+                        reward *= 2;
+                        logEvent('💰[富足]神恩觸發，通過起點獎勵翻倍！');
+                        delete gameState.activeBuffs[Object.keys(getActiveBuff('富足'))[0]];
+                    }
+                    logEvent('✨ 你完成了一圈星辰之旅！');
+                    modifyTime(reward);
+                }
+                handleMonopolyLand();
+                elements.monopolyRollBtn.disabled = false;
+            }
+        }, 200);
+    }
+    
+    function handleMonopolyLand() {
+        const landedCell = gameState.monopolyBoardMap[gameState.monopolyPosition];
+        elements.monopolyEventText.textContent = `第${gameState.monopolyPosition}格: ${landedCell.text}`;
+        logEvent(`🗺️ 星辰棋盤：來到第 ${gameState.monopolyPosition} 格，觸發「${landedCell.text}」！`);
+
+        if (landedCell.value) modifyTime(landedCell.value);
+        if (landedCell.effect) {
+            if (landedCell.duration > 0) {
+                addBuff(landedCell.effect, landedCell.duration);
+            } else {
+                handleSpecialOutcome(landedCell.effect, landedCell.payload);
+            }
+        }
+        if (landedCell.type === 'start') modifyTime(-3*3600);
+        
+        updateUI();
+        saveState();
+    }
+
+    // 5. Instant Lotto
+    function buildLottoGrid() {
+        elements.lottoGrid.innerHTML = '';
+        for (let i = 1; i <= 30; i++) {
+            const numEl = document.createElement('div');
+            numEl.className = 'lotto-number';
+            numEl.textContent = i;
+            numEl.dataset.number = i;
+            numEl.addEventListener('click', () => toggleLottoNumber(i, numEl));
+            elements.lottoGrid.appendChild(numEl);
+        }
+    }
+    
+    function setupLotto() {
+        if (gameState.lottoCharges <= 0) return;
+        lottoSelection = [];
+        updateLottoSelectionUI();
+        elements.lottoResultArea.textContent = '';
+        openModal('lottoModal');
+    }
+    
+    function toggleLottoNumber(num, el) {
+        const index = lottoSelection.indexOf(num);
+        if (index > -1) {
+            lottoSelection.splice(index, 1);
+        } else if (lottoSelection.length < 5) {
+            lottoSelection.push(num);
+        }
+        updateLottoSelectionUI();
+    }
+    
+    function updateLottoSelectionUI() {
+        lottoSelection.sort((a, b) => a - b);
+        elements.lottoSelectionText.textContent = lottoSelection.join(', ') || '尚未選擇';
+        document.querySelectorAll('.lotto-number').forEach(el => {
+            el.classList.toggle('selected', lottoSelection.includes(parseInt(el.dataset.number)));
+        });
+        elements.drawLottoBtn.disabled = lottoSelection.length !== 5;
+    }
+
+    function drawLotto() {
+        if (lottoSelection.length !== 5 || gameState.lottoCharges <= 0) return;
+        
+        gameState.lottoCharges--;
+        logEvent(`🎟️ 你獻上靈魂之力，祈求聖籤的指引，號碼為：${lottoSelection.join(', ')}`);
+        
+        const winningNumbers = new Set();
+        while (winningNumbers.size < 5) {
+            winningNumbers.add(Math.floor(Math.random() * 30) + 1);
+        }
+        const winningArray = [...winningNumbers].sort((a,b) => a-b);
+        
+        const matches = lottoSelection.filter(num => winningNumbers.has(num)).length;
+        let reward = 0;
+        let rewardText = `神諭號碼: ${winningArray.join(', ')}. 你的號碼: ${lottoSelection.join(', ')}. 契合 ${matches} 個`;
+
+        if (matches === 5) { reward = -48 * 3600; rewardText += '，頭獎！'; }
+        else if (matches === 4) { reward = -12 * 3600; rewardText += '，二獎！'; }
+        else if (matches === 3) { reward = -4 * 3600; rewardText += '，三獎！'; }
+        else if (matches === 2) { reward = -30 * 60; rewardText += '，普獎。'; }
+        else { rewardText += '，未中獎。'; }
+        
+        elements.lottoResultArea.textContent = rewardText;
+        logEvent(`🎟️ 聖籤結果：${rewardText}`);
+
+        if (reward !== 0) modifyTime(reward);
+        
+        lottoSelection = [];
+        updateLottoSelectionUI();
+        updateUI();
+        saveState();
+    }
+
+    // 6. Three Doors of Fate
+    function setupThreeDoors() {
+        if (gameState.threeDoorsCharges <= 0) return;
+        gameState.threeDoorsCharges--;
+        
+        const [prize, trap1, trap2] = generateThreeDoorsSet();
+        let doors = [prize, trap1, trap2];
+        for (let i = doors.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [doors[i], doors[j]] = [doors[j], doors[i]];
+        }
+
+        threeDoorsState = {
+            doors: doors,
+            playerChoice: null,
+            openedByHost: null,
+            step: 1, 
+        };
+
+        elements.threeDoorsMessage.innerHTML = `本回合獎勵：<strong style="color: var(--success-color);">${prize.text}</strong><br>陷阱：<strong style="color: var(--danger-color);">${trap1.text}</strong>、<strong style="color: var(--danger-color);">${trap2.text}</strong><br>請選擇一扇門！`;
+        elements.threeDoorsChoices.style.display = 'none';
+        document.querySelectorAll('.door').forEach((door, i) => {
+            door.classList.remove('selected', 'opened');
+            door.innerHTML = '<span>?</span>';
+            door.onclick = () => chooseDoor(i);
+        });
+
+        openModal('threeDoorsModal');
+    }
+
+    function chooseDoor(index) {
+        if (threeDoorsState.step !== 1) return;
+        threeDoorsState.playerChoice = index;
+        threeDoorsState.step = 2;
+
+        document.querySelectorAll('.door').forEach((door, i) => {
+            door.classList.toggle('selected', i === index);
+            door.onclick = null; // Disable further clicks
+        });
+
+        let doorToOpen;
+        for (let i = 0; i < 3; i++) {
+            if (i !== threeDoorsState.playerChoice && !threeDoorsState.doors[i].isPrize) {
+                doorToOpen = i;
+                break;
+            }
+        }
+        
+        threeDoorsState.openedByHost = doorToOpen;
+
+        setTimeout(() => {
+            const openedDoorEl = document.querySelector(`.door[data-index="${doorToOpen}"]`);
+            openedDoorEl.classList.add('opened');
+            openedDoorEl.innerHTML = `<div class="door-content">${threeDoorsState.doors[doorToOpen].text}</div>`;
+            
+            elements.threeDoorsMessage.textContent = `主持人打開了一扇懲罰門... 你確定不換嗎？`;
+            elements.threeDoorsChoices.style.display = 'flex';
+        }, 1000);
+    }
+    
+    function resolveThreeDoors(switched) {
+        const finalChoice = switched ? 
+            [0, 1, 2].find(i => i !== threeDoorsState.playerChoice && i !== threeDoorsState.openedByHost) :
+            threeDoorsState.playerChoice;
+            
+        const outcome = threeDoorsState.doors[finalChoice];
+        
+        document.querySelectorAll('.door').forEach((door, i) => {
+            door.classList.add('opened');
+            door.innerHTML = `<div class="door-content">${threeDoorsState.doors[i].text}</div>`;
+        });
+        document.querySelector(`.door[data-index="${finalChoice}"]`).classList.add('selected');
+        
+        elements.threeDoorsMessage.textContent = `你的選擇是... ${outcome.text}!`;
+        elements.threeDoorsChoices.style.display = 'none';
+        
+        logEvent(`🚪 三門試煉結果：${outcome.text}`);
+        applyOutcome(outcome);
+        
+        setTimeout(() => closeModal('threeDoorsModal'), 4000);
+        updateUI();
+        saveState();
+    }
+
+    function generateThreeDoorsSet() {
+        const prizeHours = Math.floor(Math.random() * 5) + 8; // 8-12
+        const prize = { text: `-${prizeHours}小時`, type: 'reward', value: -prizeHours * 3600, isPrize: true };
+        
+        const timeTrapHours = Math.floor(Math.random() * 5) + 6; // 6-10
+        const timeTrap = { text: `+${timeTrapHours}小時`, type: 'penalty', value: timeTrapHours * 3600, isPrize: false };
+
+        const realityTraps = [
+            { text: '手機排毒2小時', effect: 'add_timer', payload: 'phone_detox', weight: 10 },
+            { text: '俄羅斯轉體60次', effect: 'add_punishment', payload: 'russian_twist', weight: 25 },
+            { text: '仰臥摸腳踝60次', effect: 'add_punishment', payload: 'ankle_touch', weight: 25 },
+            { text: '深喉嚨假屌10次', effect: 'add_punishment', payload: 'dildo_punishment', weight: 20 },
+            { text: '超可怕組合技', effect: 'super_combo', weight: 15 },
+            { text: '戴鎖睡覺', effect: 'add_punishment', payload: 'chastened_slumber', weight: 5 },
+        ];
+        
+        const weightedPool = [];
+        realityTraps.forEach(trap => {
+            for(let i=0; i<trap.weight; i++) {
+                weightedPool.push(trap);
+            }
+        });
+
+        const chosenRealityTrap = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+        const realityTrap = { text: chosenRealityTrap.text, type: 'special', effect: chosenRealityTrap.effect, payload: chosenRealityTrap.payload, isPrize: false };
+
+        return [prize, timeTrap, realityTrap];
+    }
+    
+    function applyOutcome(outcome) {
+        if (outcome.value) modifyTime(outcome.value);
+        if (outcome.effect) handleSpecialOutcome(outcome.effect, outcome.payload);
+    }
+
+
+    // Final Unlock & Punishments
+    function attemptUnlock() {
+        elements.unlockBtn.disabled = true;
+        logEvent('⚔️ 你鼓起勇氣，準備與詛咒的根源進行最終對決...');
+        const isSuccess = Math.random() < 0.5;
+
+        setTimeout(() => {
+            if (isSuccess) {
+                logEvent('🎉 聖光勝利！你成功淨化了詛咒，重獲自由！');
+                showFinalUnlockModal('🎉 試煉成功！', '恭喜你，勇者！你以無比的意志力戰勝了魔神，你的靈魂再次完整。');
+                gameState = {};
+                localStorage.removeItem('devilCurseGameState_v1.1');
+            } else {
+                logEvent('❌ 對決失敗！魔神的詛咒再次將你吞噬...');
+                applyFinalPenalty();
+            }
+        }, 2000);
+    }
+    
+    function applyFinalPenalty() {
+        const rand = Math.random() * 100;
+        let penaltyMessage;
+        if (rand < 50) { const h = (Math.floor(Math.random()*3)+1); modifyTime(h*3600); penaltyMessage = `魔神低語(小)-增加${h}小時`; }
+        else if (rand < 75) { const h = (Math.floor(Math.random()*4)+3); modifyTime(h*3600); penaltyMessage = `魔神低語(中)-增加${h}小時`; }
+        else if (rand < 85) { const h = (Math.floor(Math.random()*7)+6); modifyTime(h*3600); penaltyMessage = `魔神低語(大)-增加${h}小時`; }
+        else if (rand < 95) { penaltyMessage = `束縛再現-生成1小時貞操鎖試煉`; addTimer('chastity_lock'); }
+        else { const t = gameState.totalChallengeTime/1000; penaltyMessage = `史詩級反噬-增加初始總時長(${formatDuration(t)})`; modifyTime(t, false); }
+        
+        logEvent(`💥 靈魂反噬觸發：${penaltyMessage}`);
+        showFinalUnlockModal('❌ 對決失敗！', `觸發靈魂反噬：${penaltyMessage}<br>試煉仍在繼續！`);
+        saveState();
+        startTimer();
+        updateUI();
+    }
+
+    function showFinalUnlockModal(title, message) {
+        document.getElementById('finalUnlockTitle').innerHTML = title;
+        document.getElementById('finalUnlockMessage').innerHTML = message;
+        openModal('finalUnlockModal');
+    }
+    
+    function handleSpecialOutcome(effect, payload) {
+        switch(effect) {
+            case 'add_punishment':
+                if (payload === 'random_physical') {
+                    const physicalPunishments = ['wall_sit', 'plank', 'russian_twist', 'ankle_touch'];
+                    const randomPunishment = physicalPunishments[Math.floor(Math.random() * physicalPunishments.length)];
+                    addPunishment(randomPunishment, 1);
+                } else {
+                    addPunishment(payload, 1);
+                }
+                break;
+            case 'add_timer':
+                addTimer(payload);
+                break;
+            case 'reduce_timer':
+                if (gameState.timers.length > 0) {
+                    const timer = gameState.timers.find(t => t.type === payload) || gameState.timers[0];
+                    if (timer) {
+                        timer.duration -= 30 * 60 * 1000;
+                        logEvent(`✨ 神聖祝福！一個「${timer.name}」時間減少了30分鐘！`);
+                    }
+                } else { logEvent(`✨ 神聖祝福！但沒有計時器可以減少。`); }
+                break;
+            case 'all_charges_plus_one':
+                Object.keys(gameState.chargeTimers).forEach(key => gameState[key + 'Charges']++);
+                logEvent('⚡ 靈魂之力湧現！所有儀式的靈魂之力+1！');
+                break;
+            case 'remove_timer':
+                const timerIndex = gameState.timers.findIndex(t => t.type === payload);
+                if (timerIndex > -1) {
+                    const timerName = gameState.timers[timerIndex].name;
+                    gameState.timers.splice(timerIndex, 1);
+                    logEvent(`🔓 奇蹟發生！一個「${timerName}」被移除了！`);
+                } else { logEvent('🤷 沒有對應的計時器可以移除。'); }
+                break;
+            case 'super_combo':
+                logEvent('💥💥💥 超可怕組合技！獲得貞操鎖、涼巾、刮鬍泡試煉全餐！');
+                addTimer('chastity_lock');
+                addPunishment('towel_punishment', 1);
+                addPunishment('foam_punishment', 1);
+                break;
+            case 'copy_slot_positive':
+                if (gameState.lastSlotResult && gameState.lastSlotResult.type === 'reward') {
+                    logEvent(`🔄 星辰之力！複製了上次祭壇的正面回應「${gameState.lastSlotResult.text}」！`);
+                    modifyTime(gameState.lastSlotResult.value);
+                } else { logEvent('🤷 星辰之力無法複製，上次祭壇沒有正面回應。'); }
+                break;
+            case 'copy_slot_negative':
+                 if (gameState.lastSlotResult && gameState.lastSlotResult.type === 'penalty') {
+                    logEvent(`💀 星辰之力！複製了上次祭壇的負面回應「${gameState.lastSlotResult.text}」！`);
+                    modifyTime(gameState.lastSlotResult.value);
+                } else { logEvent('🤷 星辰之力無法複製，上次祭壇沒有負面回應。'); }
+                break;
+            case '強化': case '預知': case '幸運': case '富足': case '虛弱': case '厄運': case '堅韌':
+                 addBuff(effect, 9999, true); // One-time use buffs
+                 break;
+        }
+        updateUI();
+        saveState();
+    }
+
+    const timerTypes = {
+        'chastity_lock': { name: '貞操鎖試煉', duration: 1 * 3600 * 1000, icon: '⛓️' },
+        'phone_detox': { name: '手機排毒', duration: 2 * 3600 * 1000, icon: '📵' },
+    };
+
+    function addTimer(type) {
+        if (!timerTypes[type]) return;
+        const config = timerTypes[type];
+        const newTimer = { id: Date.now(), type: type, name: config.name, icon: config.icon, duration: config.duration, startTime: Date.now() };
+        gameState.timers.push(newTimer);
+        logEvent(`${config.icon} 新增計時器試煉：「${config.name}」！`);
+        renderAllTimers();
+        saveState();
+    }
+
+    function updateAllTimers() {
+         for (let i = gameState.timers.length - 1; i >= 0; i--) {
+            const timer = gameState.timers[i];
+            const elapsed = Date.now() - timer.startTime;
+            const remaining = timer.duration - elapsed;
+            const timerEl = document.getElementById(`timer-${timer.id}`);
+            if (remaining <= 0) {
+                logEvent(`✅ 計時器試煉完成：「${timer.name}」！`);
+                if(timerEl) timerEl.remove();
+                gameState.timers.splice(i, 1);
+                saveState();
+            } else if (timerEl) {
+                timerEl.querySelector('.timer-time').textContent = formatDuration(remaining / 1000);
+            }
+        }
+    }
+    
+    function renderAllTimers() {
+        elements.timersArea.innerHTML = '';
+        gameState.timers.forEach(timer => {
+            const el = document.createElement('div');
+            el.className = 'status-item timer-item';
+            el.id = `timer-${timer.id}`;
+            const remaining = timer.duration - (Date.now() - timer.startTime);
+            el.innerHTML = `<span>${timer.icon} ${timer.name} (剩餘 <span class="timer-time">${formatDuration(remaining / 1000)}</span>)</span><span>進行中...</span>`;
+            elements.timersArea.appendChild(el);
+        });
+    }
+
+    const punishmentTypes = {
+        'towel_punishment': { name: '涼巾試煉', icon: '🥶' },
+        'foam_punishment': { name: '刮鬍泡試煉', icon: '☁️' },
+        'dildo_punishment': { name: '深喉嚨假屌10次', icon: '🍆' },
+        'russian_twist': { name: '俄羅斯轉體60次', icon: '💪' },
+        'ankle_touch': { name: '仰臥摸腳踝60次', icon: '💪' },
+        'scribe_penance': { name: '抄寫聖言', icon: '✍️' },
+        'wall_sit': { name: '靠牆深蹲30秒', icon: '🏋️' },
+        'plank': { name: '棒式撐體45秒', icon: '🤸' },
+        'chastened_slumber': { name: '戴鎖睡覺', icon: '🌙' },
+    };
+
+    function addPunishment(type, amount) {
+        if (!punishmentTypes[type]) return;
+
+        if (type === 'scribe_penance') {
+            const quote = scribeQuotes[Math.floor(Math.random() * scribeQuotes.length)];
+            elements.scribeText.textContent = `"${quote}"`;
+            openModal('scribeModal');
+            elements.scribeConfirmBtn.onclick = () => {
+                logEvent(`✍️ 你完成了一次抄寫聖言！`);
+                closeModal('scribeModal');
+                saveState();
+            };
+            return;
+        }
+
+        if (!gameState.punishments[type]) {
+            gameState.punishments[type] = 0;
+        }
+        gameState.punishments[type] += amount;
+        logEvent(`${punishmentTypes[type].icon} 新增試煉：「${punishmentTypes[type].name}」！`);
+        renderPunishments();
+        saveState();
+    }
+    
+    function renderPunishments() {
+        elements.punishmentArea.innerHTML = '';
+        for (const type in gameState.punishments) {
+            const count = gameState.punishments[type];
+            if (count > 0) {
+                const config = punishmentTypes[type];
+                const el = document.createElement('div');
+                el.className = 'status-item punishment-item';
+                el.innerHTML = `<span>${config.icon} 待執行試煉: ${config.name} x ${count}</span><button class="btn btn-sm btn-danger">我已完成</button>`;
+                el.querySelector('button').addEventListener('click', () => { 
+                    gameState.punishments[type]--; 
+                    logEvent(`${config.icon} 你完成了一次「${config.name}」試煉！`); 
+                    renderPunishments(); 
+                    saveState(); 
+                });
+                elements.punishmentArea.appendChild(el);
+            }
+        }
+    }
+
+    // --- Event Listeners ---
+    elements.newChallengeBtn.addEventListener('click', () => openModal('difficultyModal'));
+    elements.difficultySelection.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            startNewChallenge(parseInt(e.target.dataset.level), parseFloat(e.target.dataset.multiplier));
+        }
+    });
+    elements.diceBtn.addEventListener('click', rollDice);
+    elements.slotBtn.addEventListener('click', pullSlotMachine);
+    elements.rouletteBtn.addEventListener('click', setupRoulette);
+    elements.monopolyBtn.addEventListener('click', setupMonopoly);
+    elements.lottoBtn.addEventListener('click', setupLotto);
+    elements.threeDoorsBtn.addEventListener('click', setupThreeDoors);
+    elements.unlockBtn.addEventListener('click', attemptUnlock);
+    elements.finalUnlockCloseBtn.addEventListener('click', () => {
+        closeModal('finalUnlockModal');
+        if (!gameState.targetTime) initializeGame();
+    });
+    elements.spinRouletteBtn.addEventListener('click', spinRoulette);
+    document.querySelectorAll('[data-bet-type="color"]').forEach(btn => {
+        btn.addEventListener('click', () => placeRouletteBet('color', btn.dataset.betValue));
+    });
+    elements.specificBetBtn.addEventListener('click', () => {
+        const val = parseInt(document.getElementById('specificBetInput').value);
+        if (!isNaN(val) && val >= 0 && val <= 11) placeRouletteBet('specific', val);
+    });
+    elements.monopolyRollBtn.addEventListener('click', rollMonopolyDice);
+    elements.drawLottoBtn.addEventListener('click', drawLotto);
+    document.getElementById('stickBtn').addEventListener('click', () => resolveThreeDoors(false));
+    document.getElementById('switchBtn').addEventListener('click', () => resolveThreeDoors(true));
+
+    // --- Initial Load ---
+    window.onload = initializeGame;
+    </script>
+</body>
+</html>
